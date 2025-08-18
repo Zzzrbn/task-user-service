@@ -1,8 +1,5 @@
 package com.zzzrbn.taskuserservice.entity;
 
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;

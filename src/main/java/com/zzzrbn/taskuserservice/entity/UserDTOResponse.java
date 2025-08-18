@@ -11,9 +11,7 @@ public class UserDTOResponse {
 	private String firstname;
 	private String lastname;
 	private String phoneNumber;
-    @JsonIgnoreProperties({
-    	//"id", 
-    	"usersIds", "users"})
+    @JsonIgnoreProperties({"usersIds", "users"})
 	private Company company;
 
 }

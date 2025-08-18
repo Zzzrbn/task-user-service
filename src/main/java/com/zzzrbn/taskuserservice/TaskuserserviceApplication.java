@@ -10,8 +10,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 public class TaskuserserviceApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(TaskuserserviceApplication.class, args);
-				
+		SpringApplication.run(TaskuserserviceApplication.class, args);				
 	}
 
 }

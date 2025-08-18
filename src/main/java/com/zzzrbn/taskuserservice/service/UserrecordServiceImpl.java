@@ -4,8 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import javax.swing.ListModel;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import com.zzzrbn.taskuserservice.client.Feigncompany;
 import com.zzzrbn.taskuserservice.dao.UserrecordDAO;
@@ -22,32 +23,30 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Service
 @Slf4j
-public class UserrecordServiceImpl 
-			implements UserrecordService
-					{
+public class UserrecordServiceImpl implements UserrecordService {
 
 	private final UserrecordDAO userrecordDAO;
 
 	private final Feigncompany feigncompany;
-	
+
 	private final UserMapper userMapper;
 
 	@Override
 	@Transactional
-	public List<UserDTOResponse> getAllUsersrecords() {
-		log.info("Get all users");
-		List<Userrecord> urList = userrecordDAO.findAll();
-		List<UserDTOResponse> userDTOResponses = new ArrayList<UserDTOResponse>();
-		for (Userrecord ur: urList)
-		{
+	public List<UserDTOResponse> getAllUsersrecords(int page, int size) {
+		log.info("Get all users. Page: {}, size: {}", page, size);
+		Pageable pageable = PageRequest.of(page, size);
+		Page<Userrecord> urPage = userrecordDAO.findAll(pageable);
+		List<Userrecord> urList = urPage.getContent();
+		List<UserDTOResponse> userDTOResponses = new ArrayList<>();
+		for (Userrecord ur : urList) {
 			Company company = new Company();
 			try {
-			company = feigncompany.getCompany(ur.getCompanyId());
-			}
-			catch (Exception e) {
+				company = feigncompany.getCompany(ur.getCompanyId());
+			} catch (Exception e) {
 				log.info("Exception while get all users: {}.", e);
 			}
-				userDTOResponses.add(userMapper.userToUserResponse(ur, company));
+			userDTOResponses.add(userMapper.userToUserResponse(ur, company));
 		}
 		return userDTOResponses;
 	}
@@ -58,22 +57,18 @@ public class UserrecordServiceImpl
 		log.info("Creating new user: {}", userDTORequest);
 		Userrecord userrecord = userMapper.userrequestToUser(userDTORequest);
 		userrecordDAO.save(userrecord);
-		//Company company = feigncompany.getCompany(userrecord.getCompanyId());
-		return userMapper.userToUserResponse(userrecord, 
-				//company
-				new Company()
-				);
+		return userMapper.userToUserResponse(userrecord,
+				// company
+				new Company());
 	}
 
 	@Override
 	@Transactional
 	public UserDTOResponse updateUserrecord(Long id, UserDTORequest userDTORequest) throws Exception {
 		log.info("Updating user with id {}: {}", id, userDTORequest);
-		if(!userrecordDAO.existsById(id))
-		{
+		if (!userrecordDAO.existsById(id)) {
 			log.info("User with id {} is not exist ", id);
-			throw new Exception("User with id "+id+" is not exist");
-			
+			throw new Exception("User with id " + id + " is not exist");
 		}
 		Optional<Userrecord> userrecord = userrecordDAO.findById(id);
 		userMapper.updateUserrecord(userrecord.get(), userDTORequest);
@@ -86,24 +81,21 @@ public class UserrecordServiceImpl
 		log.info("Get  user by id: {}", id);
 		Optional<Userrecord> ur = userrecordDAO.findById(id);
 		Company company = feigncompany.getCompany(ur.get().getCompanyId());
-		if (company != null)
-		{
+		if (company != null) {
 			return userMapper.userToUserResponse(ur.get(), company);
-		}
-		else {
+		} else {
 			return userMapper.userToUserResponse(ur.get(), new Company());
-		}		
+		}
 	}
 
 	@Override
 	public void deleteUserrecord(Long id) throws Exception {
 		log.info("Deleting user with id: {}", id);
-		if(!userrecordDAO.existsById(id))
-		{
+		if (!userrecordDAO.existsById(id)) {
 			log.info("User with id {} is not exist", id);
-			throw new Exception("User with id "+id+" is not exist");
+			throw new Exception("User with id " + id + " is not exist");
 		}
-		userrecordDAO.deleteById(id);	
+		userrecordDAO.deleteById(id);
 	}
 
 	@Override
@@ -111,11 +103,9 @@ public class UserrecordServiceImpl
 		log.info("Get users by company id: {}", companyId);
 		List<Userrecord> userrecords = userrecordDAO.findByCompanyId(companyId);
 		List<UserDTOResponse> userDTOResponses = new ArrayList<UserDTOResponse>();
-		for (Userrecord ur: userrecords)
-		{
+		for (Userrecord ur : userrecords) {
 			userDTOResponses.add(userMapper.userToUserResponse(ur, new Company()));
-		}		
-		
+		}
 		return userDTOResponses;
 	}
 }

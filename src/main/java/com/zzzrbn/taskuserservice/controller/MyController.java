@@ -3,6 +3,9 @@ package com.zzzrbn.taskuserservice.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,108 +15,72 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.zzzrbn.taskuserservice.entity.CompanyDTO;
 import com.zzzrbn.taskuserservice.entity.UserDTO;
-import com.zzzrbn.taskuserservice.service.CompanyService;
+import com.zzzrbn.taskuserservice.entity.UserDTORequest;
+import com.zzzrbn.taskuserservice.entity.UserDTOResponse;
 import com.zzzrbn.taskuserservice.service.UserrecordService;
+import com.zzzrbn.taskuserservice.service.UserrecordServiceImpl;
+
+import lombok.RequiredArgsConstructor;
 
 
 
 @RestController
 @RequestMapping("/")
+@RequiredArgsConstructor
 public class MyController {
 
 	@Autowired
 	private UserrecordService userrecordService;
 	
-//	@Autowired
-//	private CompanyService companyService;
-	
 	@GetMapping("/user")
-	public List<UserDTO> showAllUsersrecords() {
-		List<UserDTO> allUsersrecords = userrecordService.getAllUsersrecords();
-		return allUsersrecords;
+	public ResponseEntity<List<UserDTOResponse>> showAllUsersrecords() {
+		List<UserDTOResponse> allUsersrecords = userrecordService.getAllUsersrecords();
+		return ResponseEntity.status(HttpStatus.CREATED).body(allUsersrecords);
+	}
+	
+	@GetMapping("/user/bycompany/{companyId}")
+	public ResponseEntity<List<UserDTOResponse>> getUsersByCompanyId(@PathVariable Long companyId) {
+	    List<UserDTOResponse> users = userrecordService.findByCompanyId(companyId);
+	    return ResponseEntity.status(HttpStatus.OK).body(users);
 	}
 	
 	@GetMapping("/user/{id}")
-	public UserDTO getUserrecord(@PathVariable Long id) {
-		UserDTO userDTO = userrecordService.getUserrecord(id);
-		return userDTO;
+	public ResponseEntity<UserDTOResponse> getUserrecord(@PathVariable Long id) {
+		UserDTOResponse userDTOResponse = userrecordService.getUserrecord(id);
+		return ResponseEntity.status(HttpStatus.OK).body(userDTOResponse);
 	}
 	
 	@PostMapping("/user")
-	public UserDTO createUserrecord(@RequestBody UserDTO userDTO)
+	public ResponseEntity<UserDTORequest> createUserrecord(@RequestBody UserDTORequest userDTORequest)
 	{
-		userrecordService.createUserrecord(userDTO);
-		return userDTO;
+		userrecordService.createUserrecord(userDTORequest);
+		return ResponseEntity.status(HttpStatus.CREATED).body(userDTORequest);
 	}
 	
 	@PutMapping("/user/{id}")
-	public UserDTO updateUserrecord(@PathVariable Long id, @RequestBody UserDTO userDTO)
+	public ResponseEntity<UserDTOResponse> updateUserrecord(@PathVariable Long id, @RequestBody UserDTORequest userDTORequest) throws Exception
 	{
-		userrecordService.updateUserrecord(id, userDTO);
-		return userDTO;		
+		try {
+		UserDTOResponse userDTOResponse = userrecordService.updateUserrecord(id, userDTORequest);
+		return ResponseEntity.status(HttpStatus.OK).body(userDTOResponse);
+		}
+		catch (Exception e)
+		{
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+		}
 	}
 		
 	@DeleteMapping("/user/{id}")
-	public String deleteUserrecord(@PathVariable Long id) throws Exception
+	public ResponseEntity<String> deleteUserrecord(@PathVariable Long id) throws Exception
 	{
-		UserDTO userDTO = userrecordService.getUserrecord(id);
-		if (userDTO == null)
-		{
-			throw new Exception("There is no user with id = "+id+" in Database");
-		}
+		try {
 		userrecordService.deleteUserrecord(id);
-		return "User with id = " + id + " was deleted";
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).body("User with id = " + id + " was deleted");
+		}
+		catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User with id = " + id + "does not exist");
+		}
 	}
-//*****************************************************************************************************	
-	
-	
-//	@GetMapping("/company")
-//	public List<CompanyDTO> showAllCompanies() {
-//		List<CompanyDTO> allCompanies = companyService.getAllCompanies();
-//		return allCompanies;
-//	}
-//	
-//	
-//	
-//	@GetMapping("/company/{id}")
-//	public CompanyDTO getCompany(@PathVariable Long id) {
-//		CompanyDTO companyDTO = companyService.getCompany(id);
-//		return companyDTO;
-//	}
-//	
-//	
-//	
-//	@PostMapping("/company")
-//	public CompanyDTO addNewCompany(@RequestBody CompanyDTO companyDTO)
-//	{
-//		companyService.createCompany(companyDTO);
-//		return companyDTO;
-//		
-//	}
-//	
-//	@PutMapping("/company/{id}")
-//	public CompanyDTO updateCompany(@PathVariable Long id, @RequestBody CompanyDTO companyDTO)
-//	{
-//		companyService.updateCompany(id, companyDTO);
-//		return companyDTO;
-//		
-//	}
-//	
-//	@DeleteMapping("/company/{id}")
-//	public String deleteCompany(@PathVariable Long id) throws Exception
-//	{
-//		CompanyDTO companyDTO = companyService.getCompany(id);
-//		
-//		if (companyDTO == null)
-//		{
-//			throw new Exception("There is no company with id = "+id+" in Database");
-//		}
-//		companyService.deleteCompany(id);
-//		return "Company with id = " + id + " was deleted";
-//	}
-//	
 
-	
 }

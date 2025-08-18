@@ -1,60 +1,121 @@
 package com.zzzrbn.taskuserservice.service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import javax.swing.ListModel;
+
 import org.springframework.stereotype.Service;
-
+import com.zzzrbn.taskuserservice.client.Feigncompany;
 import com.zzzrbn.taskuserservice.dao.UserrecordDAO;
-import com.zzzrbn.taskuserservice.entity.UserDTO;
+import com.zzzrbn.taskuserservice.entity.Company;
+import com.zzzrbn.taskuserservice.entity.UserDTORequest;
+import com.zzzrbn.taskuserservice.entity.UserDTOResponse;
 import com.zzzrbn.taskuserservice.entity.Userrecord;
+import com.zzzrbn.taskuserservice.mappers.UserMapper;
 
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@RequiredArgsConstructor
 @Service
-public class UserrecordServiceImpl implements UserrecordService{
+@Slf4j
+public class UserrecordServiceImpl 
+			implements UserrecordService
+					{
+
+	private final UserrecordDAO userrecordDAO;
+
+	private final Feigncompany feigncompany;
 	
-	@Autowired
-	private UserrecordDAO userrecordDAO;
+	private final UserMapper userMapper;
 
 	@Override
 	@Transactional
-	public List<UserDTO> getAllUsersrecords() {
-		return userrecordDAO.getAllUsersrecords();
+	public List<UserDTOResponse> getAllUsersrecords() {
+		log.info("Get all users");
+		List<Userrecord> urList = userrecordDAO.findAll();
+		List<UserDTOResponse> userDTOResponses = new ArrayList<UserDTOResponse>();
+		for (Userrecord ur: urList)
+		{
+			Company company = new Company();
+			try {
+			company = feigncompany.getCompany(ur.getCompanyId());
+			}
+			catch (Exception e) {
+				log.info("Exception while get all users: {}.", e);
+			}
+				userDTOResponses.add(userMapper.userToUserResponse(ur, company));
+		}
+		return userDTOResponses;
 	}
 
 	@Override
 	@Transactional
-	public void createUserrecord(UserDTO userDTO) {
-		userrecordDAO.createUserrecord(userDTO);
+	public UserDTOResponse createUserrecord(UserDTORequest userDTORequest) {
+		log.info("Creating new user: {}", userDTORequest);
+		Userrecord userrecord = userMapper.userrequestToUser(userDTORequest);
+		userrecordDAO.save(userrecord);
+		//Company company = feigncompany.getCompany(userrecord.getCompanyId());
+		return userMapper.userToUserResponse(userrecord, 
+				//company
+				new Company()
+				);
+	}
+
+	@Override
+	@Transactional
+	public UserDTOResponse updateUserrecord(Long id, UserDTORequest userDTORequest) throws Exception {
+		log.info("Updating user with id {}: {}", id, userDTORequest);
+		if(!userrecordDAO.existsById(id))
+		{
+			log.info("User with id {} is not exist ", id);
+			throw new Exception("User with id "+id+" is not exist");
+			
+		}
+		Optional<Userrecord> userrecord = userrecordDAO.findById(id);
+		userMapper.updateUserrecord(userrecord.get(), userDTORequest);
+		userrecordDAO.save(userrecord.get());
+		return userMapper.userToUserResponse(userrecord.get(), new Company());
+	}
+
+	@Override
+	public UserDTOResponse getUserrecord(Long id) {
+		log.info("Get  user by id: {}", id);
+		Optional<Userrecord> ur = userrecordDAO.findById(id);
+		Company company = feigncompany.getCompany(ur.get().getCompanyId());
+		if (company != null)
+		{
+			return userMapper.userToUserResponse(ur.get(), company);
+		}
+		else {
+			return userMapper.userToUserResponse(ur.get(), new Company());
+		}		
+	}
+
+	@Override
+	public void deleteUserrecord(Long id) throws Exception {
+		log.info("Deleting user with id: {}", id);
+		if(!userrecordDAO.existsById(id))
+		{
+			log.info("User with id {} is not exist", id);
+			throw new Exception("User with id "+id+" is not exist");
+		}
+		userrecordDAO.deleteById(id);	
+	}
+
+	@Override
+	public List<UserDTOResponse> findByCompanyId(Long companyId) {
+		log.info("Get users by company id: {}", companyId);
+		List<Userrecord> userrecords = userrecordDAO.findByCompanyId(companyId);
+		List<UserDTOResponse> userDTOResponses = new ArrayList<UserDTOResponse>();
+		for (Userrecord ur: userrecords)
+		{
+			userDTOResponses.add(userMapper.userToUserResponse(ur, new Company()));
+		}		
 		
+		return userDTOResponses;
 	}
-
-	@Override
-	@Transactional
-	public UserDTO getUserrecord(Long id) {
-		return userrecordDAO.getUserrecord(id);
-	}
-
-	@Override
-	@Transactional
-	public void deleteUserrecord(Long id) {
-		userrecordDAO.deleteUserrecord(id);
-		
-	}
-
-	@Override
-	@Transactional
-	public void updateUserrecord(Long id, UserDTO userDTO) {
-		userrecordDAO.updateUserrecord(id, userDTO);
-		
-	}
-
-	@Override
-	public List<Userrecord> getUserrecordsbyId(Long id) {
-		return userrecordDAO.getUserrecordsbyId(id);
-	}
-	
-	
-
 }

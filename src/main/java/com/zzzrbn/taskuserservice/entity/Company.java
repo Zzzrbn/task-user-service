@@ -2,7 +2,6 @@ package com.zzzrbn.taskuserservice.entity;
 
 import java.util.List;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 
 import jakarta.persistence.CollectionTable;
@@ -19,32 +18,38 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@AllArgsConstructor
-@NoArgsConstructor
+//@AllArgsConstructor
+//@NoArgsConstructor
 @Data
-@Entity
-@Table(name="companies")
-public class Company implements Serializable {
+//@Entity
+//@Table(name="companies")
+public class Company {
 	
-    @Id
-    //@ToString.Exclude
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    //@JsonIgnore
-    @Column(name = "id")
     private Long id;
-    
-    @Column(name = "name")
     private String name;
-    
-    @Column(name = "budget")
     private BigDecimal budget;
-    
-    @ElementCollection
-    @CollectionTable(name = "company_users", joinColumns = @JoinColumn(name = "company_id"))
-    @Column(name = "userrecord_id")
     private List<Long> usersIds;
-    
-    @Transient
     private List<Userrecord> users;
+	
+//  @Id
+//  //@ToString.Exclude
+//  @GeneratedValue(strategy = GenerationType.IDENTITY)
+//  //@JsonIgnore
+//  @Column(name = "id")
+//  private Long id;
+//  
+//  @Column(name = "name")
+//  private String name;
+//  
+//  @Column(name = "budget")
+//  private BigDecimal budget;
+//  
+//  @ElementCollection
+//  @CollectionTable(name = "company_users", joinColumns = @JoinColumn(name = "company_id"))
+//  @Column(name = "userrecord_id")
+//  private List<Long> usersIds;
+//  
+//  @Transient
+//  private List<Userrecord> users;
     
 }

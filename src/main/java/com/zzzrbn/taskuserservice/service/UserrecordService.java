@@ -5,21 +5,25 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.zzzrbn.taskuserservice.entity.UserDTO;
+import com.zzzrbn.taskuserservice.entity.UserDTORequest;
+import com.zzzrbn.taskuserservice.entity.UserDTOResponse;
 import com.zzzrbn.taskuserservice.entity.Userrecord;
 
 @Service
 public interface UserrecordService {
 	
-	public List<UserDTO> getAllUsersrecords();
+	public List<UserDTOResponse> getAllUsersrecords();
 	
-	public void createUserrecord(UserDTO userDTO);
+	public UserDTOResponse createUserrecord(UserDTORequest userDTORequest);
 	
-	public UserDTO getUserrecord (Long id);
+	public UserDTOResponse getUserrecord (Long id);
 	
-	public List<Userrecord> getUserrecordsbyId (Long id);
+	//public List<UserDTOResponse> getUserrecordsbyId (Long id);
 	
-	public void deleteUserrecord(Long id);
+	public void deleteUserrecord(Long id) throws Exception;
 	
-	public void updateUserrecord(Long id, UserDTO userDTO);
-
+	public UserDTOResponse updateUserrecord(Long id
+			, UserDTORequest userDTORequest) throws Exception;
+	
+	public List<UserDTOResponse> findByCompanyId(Long companyId);
 }

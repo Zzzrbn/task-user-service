@@ -8,13 +8,28 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Data;
 
-@Data
+//@Data
 public class CompanyDTO {
 
-	@JsonIgnore
+//    private Long id;
+//    private String name;
+//    private BigDecimal budget;
+//    @JsonIgnoreProperties({"id", "companyId", "company"})
+//    private List<Userrecord> users;
+	
     private Long id;
-    private String name;
-    private BigDecimal budget;
-    @JsonIgnoreProperties({"id", "companyId", "company"})
+	private String name;
+	private BigDecimal budget;
+    @JsonIgnoreProperties({
+    	//"id", 
+    	"companyId", "company"})
     private List<Userrecord> users;
+	
+    @Override
+	public String toString() {
+		return "CompanyDTO [id=" + id + ", name=" + name + ", budget=" + budget + ", users=" + users + "]";
+	}
+    
+    
+	
 }

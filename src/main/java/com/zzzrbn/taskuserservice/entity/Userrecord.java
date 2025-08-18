@@ -7,6 +7,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,30 +22,25 @@ import lombok.NoArgsConstructor;
 public class Userrecord{
 	
     @Id
-    //@ToString.Exclude
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    //@JsonIgnore
     private Long id;
 
-    @Column(name = "firstname")
+    @NotBlank(message = "First name is required")
+    @Column(name = "firstname", nullable = false)
     private String firstname;
     
-    @Column(name = "lastname")
+    @NotBlank(message = "Last name is required")
+    @Column(name = "lastname", nullable = false)
     private String lastname;
 
-    @Column(name = "phoneNumber")
+    @Pattern(regexp = "^\\+?[0-9\\-\\s]+$", message = "Invalid phone number format")
+    @Column(name = "phoneNumber", nullable = false, unique = true)
     private String phoneNumber;
     
-    @Column(name = "company_id")
+    @Column(name = "company_id", nullable = false)
     private Long companyId;
 
-//    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
-//    @JoinColumn(name = "company_id")
-//    //@JsonIgnore
-//    //@JsonManagedReference
-//    @JsonBackReference
-    
     @Transient
     private Company company;                     
     

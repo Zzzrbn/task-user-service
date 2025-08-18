@@ -7,16 +7,16 @@ import com.zzzrbn.taskuserservice.entity.CompanyDTO;
 
 public interface CompanyDAO {
 	
-	public List<CompanyDTO> getAllCompanies();
-	
-	public void createCompany(CompanyDTO companyDTO);
-	
-	public CompanyDTO getCompany (Long id);
-	
-	public void deleteCompany(Long id);
-	
-	public void updateCompany(Long id, CompanyDTO companyDTO);
-
-	public Company getCompanybyID(Long id);
+//	public List<CompanyDTO> getAllCompanies();
+//	
+//	public void createCompany(CompanyDTO companyDTO);
+//	
+//	public CompanyDTO getCompany (Long id);
+//	
+//	public void deleteCompany(Long id);
+//	
+//	public void updateCompany(Long id, CompanyDTO companyDTO);
+//
+//	public Company getCompanybyID(Long id);
 
 }

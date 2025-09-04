@@ -1,7 +1,11 @@
 package com.zzzrbn.taskuserservice.mappers;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.stereotype.Component;
 
+import com.zzzrbn.taskuserservice.client.Feigncompany;
 import com.zzzrbn.taskuserservice.entity.Company;
 import com.zzzrbn.taskuserservice.entity.UserDTORequest;
 import com.zzzrbn.taskuserservice.entity.UserDTOResponse;
@@ -38,6 +42,25 @@ public class UserMapper {
 		} else {
 			userrecord.setCompanyId(null);
 		}
+	}
+	
+	public List<UserDTOResponse> userrecordsListToUserDTOResponses(List<Userrecord> urList, Feigncompany feigncompany)
+	{
+		
+		List<UserDTOResponse> userDTOResponses = new ArrayList<>();
+		for (Userrecord ur : urList) {
+			userDTOResponses.add(userToUserResponse(ur, feigncompany.getCompany(ur.getCompanyId())));
+		}
+		return userDTOResponses;		
+	}
+	
+	public List<UserDTOResponse> userrecordsListToUserDTOResponses(List<Userrecord> urList, Company company)
+	{		
+		List<UserDTOResponse> userDTOResponses = new ArrayList<>();
+		for (Userrecord ur : urList) {
+			userDTOResponses.add(userToUserResponse(ur, company));
+		}
+		return userDTOResponses;		
 	}
 
 }

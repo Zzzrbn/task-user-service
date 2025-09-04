@@ -16,10 +16,10 @@ public interface UserrecordService {
 	
 	public UserDTOResponse getUserrecord (Long id);
 	
-	public void deleteUserrecord(Long id) throws Exception;
+	public void deleteUserrecord(Long id);
 	
 	public UserDTOResponse updateUserrecord(Long id
-			, UserDTORequest userDTORequest) throws Exception;
+			, UserDTORequest userDTORequest);
 	
 	public List<UserDTOResponse> findByCompanyId(Long companyId);
 }

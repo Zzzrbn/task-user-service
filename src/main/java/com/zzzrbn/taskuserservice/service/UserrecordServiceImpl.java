@@ -1,6 +1,5 @@
 package com.zzzrbn.taskuserservice.service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,6 +13,7 @@ import com.zzzrbn.taskuserservice.entity.Company;
 import com.zzzrbn.taskuserservice.entity.UserDTORequest;
 import com.zzzrbn.taskuserservice.entity.UserDTOResponse;
 import com.zzzrbn.taskuserservice.entity.Userrecord;
+import com.zzzrbn.taskuserservice.exception.EntityNotFoundException;
 import com.zzzrbn.taskuserservice.mappers.UserMapper;
 
 import jakarta.transaction.Transactional;
@@ -31,81 +31,82 @@ public class UserrecordServiceImpl implements UserrecordService {
 
 	private final UserMapper userMapper;
 
-	@Override
 	@Transactional
 	public List<UserDTOResponse> getAllUsersrecords(int page, int size) {
-		log.info("Get all users. Page: {}, size: {}", page, size);
-		Pageable pageable = PageRequest.of(page, size);
-		Page<Userrecord> urPage = userrecordDAO.findAll(pageable);
-		List<Userrecord> urList = urPage.getContent();
-		List<UserDTOResponse> userDTOResponses = new ArrayList<>();
-		for (Userrecord ur : urList) {
-			Company company = new Company();
-			try {
-				company = feigncompany.getCompany(ur.getCompanyId());
-			} catch (Exception e) {
-				log.info("Exception while get all users: {}.", e);
-			}
-			userDTOResponses.add(userMapper.userToUserResponse(ur, company));
-		}
-		return userDTOResponses;
+		log.info("Returning all users. page: {}, size: {}", page, size);
+		List<Userrecord> urList = paginatedUserrecords(page, size);
+		return userMapper.userrecordsListToUserDTOResponses(urList, feigncompany);
 	}
 
-	@Override
 	@Transactional
 	public UserDTOResponse createUserrecord(UserDTORequest userDTORequest) {
-		log.info("Creating new user: {}", userDTORequest);
 		Userrecord userrecord = userMapper.userrequestToUser(userDTORequest);
 		userrecordDAO.save(userrecord);
-		return userMapper.userToUserResponse(userrecord,
-				// company
-				new Company());
+		log.info("Created new user: {}", userrecord);
+		return userMapper.userToUserResponse(userrecord, new Company());
 	}
 
-	@Override
 	@Transactional
-	public UserDTOResponse updateUserrecord(Long id, UserDTORequest userDTORequest) throws Exception {
-		log.info("Updating user with id {}: {}", id, userDTORequest);
-		if (!userrecordDAO.existsById(id)) {
-			log.info("User with id {} is not exist ", id);
-			throw new Exception("User with id " + id + " is not exist");
+	public UserDTOResponse updateUserrecord(Long id, UserDTORequest userDTORequest) {
+		Optional<Userrecord> userrecord = java.util.Optional.empty();
+		if (existUserrecordWithId(id)) {
+			userrecord = userrecordDAO.findById(id);
+			userMapper.updateUserrecord(userrecord.get(), userDTORequest);
+			userrecordDAO.save(userrecord.get());
+			log.info("Updated user with id {}: {}", id, userDTORequest);
 		}
-		Optional<Userrecord> userrecord = userrecordDAO.findById(id);
-		userMapper.updateUserrecord(userrecord.get(), userDTORequest);
-		userrecordDAO.save(userrecord.get());
 		return userMapper.userToUserResponse(userrecord.get(), new Company());
 	}
 
-	@Override
+	@Transactional
 	public UserDTOResponse getUserrecord(Long id) {
-		log.info("Get  user by id: {}", id);
-		Optional<Userrecord> ur = userrecordDAO.findById(id);
-		Company company = feigncompany.getCompany(ur.get().getCompanyId());
-		if (company != null) {
-			return userMapper.userToUserResponse(ur.get(), company);
-		} else {
-			return userMapper.userToUserResponse(ur.get(), new Company());
+		Optional<Userrecord> ur = java.util.Optional.empty();
+		if (existUserrecordWithId(id)) {
+			userrecordDAO.findById(id);
+		}
+		return getCompanyForUserDTOResponse(ur.get(), id);
+	}
+
+	@Transactional
+	public void deleteUserrecord(Long id) {
+		if (existUserrecordWithId(id)) {
+			userrecordDAO.deleteById(id);
+			log.info("User with id: {} removed", id);
 		}
 	}
 
-	@Override
-	public void deleteUserrecord(Long id) throws Exception {
-		log.info("Deleting user with id: {}", id);
+	@Transactional
+	public List<UserDTOResponse> findByCompanyId(Long companyId) {
+		List<Userrecord> userrecords = userrecordDAO.findByCompanyId(companyId);
+		log.info("Returned users by company id = {} : {}", companyId, userrecords.toString());
+		return userMapper.userrecordsListToUserDTOResponses(userrecords, new Company());
+	}
+
+	private boolean existUserrecordWithId(Long id) {
 		if (!userrecordDAO.existsById(id)) {
 			log.info("User with id {} is not exist", id);
-			throw new Exception("User with id " + id + " is not exist");
+			throw new EntityNotFoundException("User", id);
 		}
-		userrecordDAO.deleteById(id);
+		return true;
 	}
 
-	@Override
-	public List<UserDTOResponse> findByCompanyId(Long companyId) {
-		log.info("Get users by company id: {}", companyId);
-		List<Userrecord> userrecords = userrecordDAO.findByCompanyId(companyId);
-		List<UserDTOResponse> userDTOResponses = new ArrayList<UserDTOResponse>();
-		for (Userrecord ur : userrecords) {
-			userDTOResponses.add(userMapper.userToUserResponse(ur, new Company()));
-		}
-		return userDTOResponses;
+	private List<Userrecord> paginatedUserrecords(int page, int size) {
+		Pageable pageable = PageRequest.of(page, size);
+		Page<Userrecord> urPage = userrecordDAO.findAll(pageable);
+		List<Userrecord> urList = urPage.getContent();
+		log.info("Returned paginated list of users : {}", urList.toString());
+		return urList;
 	}
+
+	private UserDTOResponse getCompanyForUserDTOResponse(Userrecord ur, Long companyId) {
+		Company company = feigncompany.getCompany(companyId);
+		if (company != null) {
+			log.info("Returned user by id = {} : {}", ur.getId(), ur.toString());
+			return userMapper.userToUserResponse(ur, company);
+		} else {
+			log.info("Returned user by id = {} : with no company", ur.getId());
+			return userMapper.userToUserResponse(ur, new Company());
+		}
+	}
+
 }

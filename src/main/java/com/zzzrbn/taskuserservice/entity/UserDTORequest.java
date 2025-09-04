@@ -9,8 +9,10 @@ public class UserDTORequest {
 	
 	@NotBlank(message = "First name is required")
     private String firstname;
+	
 	@NotBlank(message = "Last name is required")
     private String lastname;
+	
 	@Pattern(regexp = "^\\+?[0-9\\-\\s]+$", message = "Invalid phone number format")
     private String phoneNumber;
 

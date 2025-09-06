@@ -22,4 +22,6 @@ public interface UserrecordService {
 			, UserDTORequest userDTORequest);
 	
 	public List<UserDTOResponse> findByCompanyId(Long companyId);
+	
+	public void removeCompanyIdFromUsers(Long companyId);
 }

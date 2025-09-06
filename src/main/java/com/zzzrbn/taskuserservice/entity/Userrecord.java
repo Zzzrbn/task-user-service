@@ -43,7 +43,7 @@ public class Userrecord{
     @Column(name = "phoneNumber", nullable = false, unique = false)
     private String phoneNumber;
     
-    @Column(name = "company_id", nullable = false)
+    @Column(name = "company_id", nullable = true)
     private Long companyId;
 
     @Transient

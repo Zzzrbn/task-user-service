@@ -74,5 +74,12 @@ public class UserController {
 		userrecordService.deleteUserrecord(id);
 		return "User with id = " + id + " was deleted";		
 	}
+	
+	@DeleteMapping("/user/remove-company-from-users")
+    public void removeCompanyIdFromUsers(@RequestParam Long companyId)
+    {
+		log.info("Removing Company Id = {} from userrecords", companyId);
+		userrecordService.removeCompanyIdFromUsers(companyId);		
+    }
 
 }
